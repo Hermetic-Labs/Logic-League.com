@@ -1,3 +1,155 @@
+const cityCanvas = document.querySelector('#point-cloud-city');
+
+async function initPointCloudCity() {
+  if (!cityCanvas) return;
+  const banner = cityCanvas.closest('.world-banner');
+  try {
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.min.js');
+    const renderer = new THREE.WebGLRenderer({ canvas: cityCanvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(44, 1, .1, 100);
+    camera.position.set(0, 5.5, 17.5);
+    camera.lookAt(0, 2.3, 0);
+
+    const city = new THREE.Group();
+    city.position.y = -1.2;
+    scene.add(city);
+
+    const positions = [];
+    const colors = [];
+    const bases = [];
+    const cyan = new THREE.Color(0x22c9ff);
+    const blue = new THREE.Color(0x147dff);
+    const violet = new THREE.Color(0xa755ff);
+    let seed = 73621;
+    const random = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const addPoint = (x, y, z, brightness = 0) => {
+      positions.push(x, y, z);
+      bases.push(x, y, z);
+      const mix = Math.max(0, Math.min(1, (x + 11) / 22));
+      const color = (mix < .58 ? cyan.clone().lerp(blue, mix) : blue.clone().lerp(violet, (mix - .58) / .42));
+      color.lerp(new THREE.Color(0xffffff), Math.min(.34, brightness));
+      colors.push(color.r, color.g, color.b);
+    };
+
+    for (let x = -12; x <= 12; x += .55) {
+      for (let z = -7; z <= 4.5; z += .62) addPoint(x, 0, z, .04);
+    }
+
+    for (let building = 0; building < 30; building += 1) {
+      const x = -10.7 + random() * 21.4;
+      const z = -4.6 + random() * 7.7;
+      const width = .48 + random() * 1.15;
+      const depth = .45 + random() * 1.05;
+      const height = 1.3 + random() * (z < -1.5 ? 4.4 : 7.2);
+      const step = .34;
+      for (let y = .12; y <= height; y += step) {
+        for (let edgeX = -width / 2; edgeX <= width / 2; edgeX += step) {
+          addPoint(x + edgeX, y, z - depth / 2, y / height * .22);
+          addPoint(x + edgeX, y, z + depth / 2, y / height * .22);
+        }
+        for (let edgeZ = -depth / 2; edgeZ <= depth / 2; edgeZ += step) {
+          addPoint(x - width / 2, y, z + edgeZ, y / height * .22);
+          addPoint(x + width / 2, y, z + edgeZ, y / height * .22);
+        }
+      }
+      for (let roofX = -width / 2; roofX <= width / 2; roofX += step) {
+        for (let roofZ = -depth / 2; roofZ <= depth / 2; roofZ += step) addPoint(x + roofX, height, z + roofZ, .32);
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const material = new THREE.PointsMaterial({ size: .068, transparent: true, opacity: .92, vertexColors: true, sizeAttenuation: true });
+    const points = new THREE.Points(geometry, material);
+    city.add(points);
+
+    const ringMaterial = new THREE.LineBasicMaterial({ color: 0x4ccfff, transparent: true, opacity: .28 });
+    [4.8, 7.1].forEach((radius, index) => {
+      const ringPoints = Array.from({ length: 96 }, (_, point) => {
+        const angle = point / 96 * Math.PI * 2;
+        return new THREE.Vector3(Math.cos(angle) * radius, 6.2 + index * .4, Math.sin(angle) * radius * .27 - .5);
+      });
+      const ring = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ringPoints), ringMaterial.clone());
+      ring.rotation.x = -.1;
+      city.add(ring);
+    });
+
+    let pointerX = 0;
+    let pointerY = 0;
+    let pulse = null;
+    let frame = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const positionAttribute = geometry.getAttribute('position');
+
+    const resize = () => {
+      const width = Math.max(1, banner.clientWidth);
+      const height = Math.max(1, banner.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.position.z = camera.aspect < 1 ? 23 : 17.5;
+      camera.updateProjectionMatrix();
+    };
+
+    const setPointer = (event) => {
+      const rect = banner.getBoundingClientRect();
+      pointerX = ((event.clientX - rect.left) / rect.width - .5) * 2;
+      pointerY = ((event.clientY - rect.top) / rect.height - .5) * 2;
+    };
+
+    const launchPulse = (event) => {
+      const rect = banner.getBoundingClientRect();
+      const relativeX = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+      const relativeY = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+      pulse = { x: (relativeX - .5) * 20, z: (relativeY - .48) * 8, started: performance.now() };
+      banner.classList.remove('city-pulsed');
+      requestAnimationFrame(() => banner.classList.add('city-pulsed'));
+    };
+
+    banner.addEventListener('pointermove', setPointer);
+    banner.addEventListener('pointerdown', launchPulse);
+    new ResizeObserver(resize).observe(banner);
+    resize();
+    banner.classList.add('city-live');
+
+    const render = (now = performance.now()) => {
+      city.rotation.y += (pointerX * .035 - city.rotation.y) * .045;
+      city.rotation.x += (-pointerY * .015 - city.rotation.x) * .045;
+      if (pulse && !reducedMotion) {
+        const age = (now - pulse.started) / 1000;
+        const radius = age * 5.8;
+        for (let index = 0; index < bases.length; index += 3) {
+          const distance = Math.hypot(bases[index] - pulse.x, bases[index + 2] - pulse.z);
+          const wave = Math.exp(-Math.pow(distance - radius, 2) * 1.15) * Math.sin(age * 9 - distance * 1.9) * .9 * Math.max(0, 1 - age / 2.25);
+          positionAttribute.array[index + 1] = bases[index + 1] + wave;
+        }
+        positionAttribute.needsUpdate = true;
+        if (age > 2.25) pulse = null;
+      }
+      city.children.slice(1).forEach((ring, index) => { ring.rotation.z = now * .00008 * (index % 2 ? -1 : 1); });
+      renderer.render(scene, camera);
+      if (!reducedMotion) frame = requestAnimationFrame(render);
+    };
+    render();
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !reducedMotion && !frame) frame = requestAnimationFrame(render);
+      if (document.hidden && frame) { cancelAnimationFrame(frame); frame = 0; }
+    });
+  } catch (error) {
+    banner?.classList.add('city-static');
+  }
+}
+
+initPointCloudCity();
+
 const memoryGrid = document.querySelector('#memory-grid');
 const memoryStatus = document.querySelector('#memory-status');
 const memoryReset = document.querySelector('#memory-reset');
@@ -6,7 +158,10 @@ const agents = [
   { id: 'X', name: 'Xander', image: 'assets/core/xander.webp' },
   { id: 'Y', name: 'Yuri', image: 'assets/core/yuri.webp' },
   { id: 'Z', name: 'Zaya', image: 'assets/core/zaya.webp' },
-  { id: 'E', name: 'EVE', image: 'assets/core/eve.webp' }
+  { id: 'E', name: 'EVE', image: 'assets/core/eve.webp' },
+  { id: 'BC', name: 'Baby Chief', image: 'assets/cast/baby-chief.webp' },
+  { id: 'C', name: 'Cipher', image: 'assets/cast/cipher.webp' },
+  { id: 'CB', name: 'Click Bait', image: 'assets/cast/click-bait.webp' }
 ];
 
 let openCards = [];
@@ -25,7 +180,7 @@ function shuffled(values) {
 
 function updateMemoryStatus() {
   memoryStatus.textContent = matchedPairs === agents.length
-    ? `You found the whole League in ${memoryTurns} turns!`
+    ? `Signal synced! You found the whole cast in ${memoryTurns} turns!`
     : `${matchedPairs} pairs found · ${memoryTurns} turns`;
 }
 
@@ -92,7 +247,7 @@ document.querySelector('#episodes-next')?.addEventListener('click', () => episod
 const repairField = document.querySelector('#repair-field');
 const repairStatus = document.querySelector('#repair-status');
 const repairStart = document.querySelector('#repair-start');
-const cannon = document.querySelector('#logic-cannon');
+const repairDrone = document.querySelector('#repair-drone');
 let repairs = 0;
 let repairActive = false;
 let currentBug = null;
@@ -122,14 +277,14 @@ function fieldPoint(event) {
   return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 }
 
-function cannonOrigin() {
-  return { x: repairField.clientWidth / 2, y: repairField.clientHeight - 52 };
+function droneOrigin() {
+  return { x: repairField.clientWidth / 2, y: repairField.clientHeight - 42 };
 }
 
-function aimCannon(point) {
-  const origin = cannonOrigin();
-  const angle = Math.atan2(point.y - origin.y, point.x - origin.x) * 180 / Math.PI;
-  cannon.style.setProperty('--aim', `${angle}deg`);
+function aimDrone(point) {
+  const origin = droneOrigin();
+  const tilt = Math.max(-16, Math.min(16, (point.x - origin.x) / repairField.clientWidth * 34));
+  repairDrone.style.setProperty('--tilt', `${tilt}deg`);
 }
 
 function spawnBug() {
@@ -192,8 +347,8 @@ function repairBug() {
 function fireAt(point) {
   if (!repairActive || shotLocked) return;
   shotLocked = true;
-  aimCannon(point);
-  const origin = cannonOrigin();
+  aimDrone(point);
+  const origin = droneOrigin();
   const shot = document.createElement('span');
   shot.className = 'pulse-shot';
   shot.style.left = `${origin.x - 6}px`;
@@ -235,6 +390,6 @@ function startRepairMission() {
   spawnBug();
 }
 
-repairField?.addEventListener('pointermove', (event) => aimCannon(fieldPoint(event)));
+repairField?.addEventListener('pointermove', (event) => aimDrone(fieldPoint(event)));
 repairField?.addEventListener('click', (event) => fireAt(fieldPoint(event)));
 repairStart?.addEventListener('click', startRepairMission);

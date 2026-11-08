@@ -20,9 +20,11 @@
   <main id="main">
     <section class="world-hero" id="top" aria-labelledby="hero-title">
       <div class="world-banner">
+        <canvas class="point-cloud-city" id="point-cloud-city" aria-hidden="true"></canvas>
         <div class="banner-city" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
         <img class="banner-living-emblem" src="assets/logic-league-living-emblem-approved.webp" alt="Xander, Yuri, Zaya, and EVE forming the living Logic League emblem">
         <div class="banner-wordmark"><small>Welcome to Point Cloud City</small><strong>Logic League</strong><p>Think in every direction.</p></div>
+        <span class="city-hint" aria-hidden="true"><i></i> Tap the city lights</span>
       </div>
       <div class="hero-copy">
         <p class="kicker">A world of friends, glitches, and big ideas</p>
@@ -104,21 +106,21 @@
     </section>
 
     <section class="play section" id="play" aria-labelledby="play-title">
-      <div class="section-heading centered"><p class="kicker">Your turn, Agent</p><h2 id="play-title">Play in Point Cloud City.</h2><p>Match the team. Aim the Logic Cannon. Turn every glitch into something better.</p></div>
+      <div class="section-heading centered"><p class="kicker">Your turn, Agent</p><h2 id="play-title">Play in Point Cloud City.</h2><p>Sync the cast. Guide the Repair Drone. Turn every glitch into something better.</p></div>
       <div class="game-grid">
         <article class="game-card memory-game" aria-labelledby="memory-title">
-          <header><div><p>Mission 01</p><h3 id="memory-title">Face Match</h3></div><button type="button" class="game-button" id="memory-reset">Mix them up</button></header>
-          <p class="game-instructions">Find two of each League member. Remember the face, then find their match.</p>
-          <div class="memory-grid" id="memory-grid" aria-label="Logic League face matching game"></div>
+          <header><div><p>Mission 01</p><h3 id="memory-title">Signal Sync</h3></div><button type="button" class="game-button" id="memory-reset">Scramble signals</button></header>
+          <p class="game-instructions">Every hero, guide, and troublemaker has a twin signal. Flip the faces and sync all seven pairs.</p>
+          <div class="memory-grid" id="memory-grid" aria-label="Signal Sync character matching game"></div>
           <p class="game-status" id="memory-status" aria-live="polite">0 pairs found · 0 turns</p>
         </article>
         <article class="game-card repair-game" aria-labelledby="repair-title">
           <header><div><p>Mission 02</p><h3 id="repair-title">Bug to Bunny</h3></div><button type="button" class="game-button" id="repair-start">Start mission</button></header>
-          <p class="game-instructions">Move the Logic Cannon, aim at the glitch bug, and fire a repair pulse. Fix six bugs and watch the data bunnies bounce home.</p>
-          <div class="repair-field" id="repair-field" aria-label="Logic Cannon repair game">
+          <p class="game-instructions">Guide EVE's Repair Drone, lock onto each glitch bug, and launch a repair pulse. Fix six bugs and watch the data bunnies bounce home.</p>
+          <div class="repair-field" id="repair-field" aria-label="Repair Drone rescue game">
             <div class="repair-sky" aria-hidden="true"></div>
             <div class="repair-idle">Press start when you're ready</div>
-            <div class="logic-cannon" id="logic-cannon" aria-hidden="true"><span class="cannon-barrel"></span><span class="cannon-core">◇</span><span class="cannon-base"></span></div>
+            <div class="repair-drone" id="repair-drone" aria-hidden="true"><span class="drone-wing left"></span><span class="drone-wing right"></span><span class="drone-body"><i></i></span><span class="drone-emitter">◇</span></div>
           </div>
           <p class="game-status" id="repair-status" aria-live="polite">Six glitch bugs are waiting</p>
         </article>
