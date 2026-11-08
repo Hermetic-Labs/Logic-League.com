@@ -20,3 +20,26 @@ body:before{position:fixed;inset:0;z-index:-2;background:linear-gradient(120deg,
 @media(max-width:760px){.site-header,main,footer{width:min(calc(100% - 32px),var(--max))}.site-header{min-height:92px}.brand-lockup img{width:56px;height:56px}.brand-divider{height:34px}.hero{min-height:0;padding-block:72px 82px}h1{font-size:clamp(3.4rem,15vw,6rem)}.point-cloud-city{min-height:460px;border-radius:20px}.city-lockup{align-items:flex-start;flex-direction:column;gap:4px}.city-lockup img{width:145px;margin:-18px auto -12px}.section-intro,.status{grid-template-columns:1fr}.axis-cards,.principles{grid-template-columns:1fr}.axis-card+.axis-card,.axis-card:nth-child(3),.axis-card:nth-child(4),.principles article+article{border-top:1px solid var(--line);border-left:0}.axis-card,.principles article{min-height:240px}.axis-card strong,h3{margin-top:56px}.status>img{display:none}footer{grid-template-columns:1fr;gap:12px}.identity-note{justify-self:start;text-align:left}}
 @media(max-width:520px){.site-header{align-items:flex-start;flex-direction:column;justify-content:center;gap:4px;padding-block:12px}.project-state{margin-left:73px}.point-cloud-city{min-height:410px}.system,.approach,.status{padding-block:84px}.section-intro{margin-bottom:58px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Approved identity assets: use the signed-off artwork directly. */
+.brand-lockup img { border-radius: 8px; object-fit: cover; }
+.approved-point-cloud-banner { padding: 34px 0 0; }
+.approved-point-cloud-banner img { display: block; width: 100%; border: 1px solid rgb(71 180 255 / 36%); border-radius: 18px; box-shadow: 0 30px 90px rgb(0 0 0 / 34%), 0 0 55px rgb(9 169 245 / 10%); }
+.hero { grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); min-height: 560px; }
+.hero-intro { align-self: center; padding: 36px 0 0 clamp(0px, 4vw, 64px); border-left: 1px solid var(--line); }
+.hero-intro .text-link { margin-top: 34px; }
+.not-found { display: block; min-height: 680px; padding-top: 150px; }
+.not-found h1 { max-width: 920px; }
+.not-found .hero-copy { max-width: 600px; }
+
+@media (max-width: 980px) {
+  .approved-point-cloud-banner { padding-top: 24px; }
+  .hero { grid-template-columns: 1fr; min-height: 0; }
+  .hero-intro { padding: 0; border-left: 0; }
+}
+
+@media (max-width: 620px) {
+  .approved-point-cloud-banner { width: calc(100% + 16px); margin-left: -8px; }
+  .approved-point-cloud-banner img { min-height: 150px; border-radius: 12px; object-fit: cover; object-position: center; }
+  .hero { padding-top: 64px; }
+}
