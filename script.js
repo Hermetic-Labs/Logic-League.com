@@ -158,7 +158,7 @@ const agents = [
   { id: 'X', name: 'Xander', image: 'assets/core/xander.webp' },
   { id: 'Y', name: 'Yuri', image: 'assets/core/yuri.webp' },
   { id: 'Z', name: 'Zaya', image: 'assets/core/zaya.webp' },
-  { id: 'E', name: 'EVE', image: 'assets/core/eve.webp' },
+  { id: 'E', name: 'EVE', image: 'assets/core/eve.webp?v=axis-v2' },
   { id: 'BC', name: 'Baby Chief', image: 'assets/cast/baby-chief.webp' },
   { id: 'C', name: 'Cipher', image: 'assets/cast/cipher.webp' },
   { id: 'CB', name: 'Click Bait', image: 'assets/cast/click-bait.webp' }
