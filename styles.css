@@ -107,10 +107,6 @@ h2 { margin: 18px 0 24px; font-size: clamp(2.65rem, 4.6vw, 4.4rem); font-weight:
 .banner-wordmark small { color: #85dcff; font-size: .7rem; font-weight: 850; letter-spacing: .17em; text-transform: uppercase; }
 .banner-wordmark strong { display: block; margin-top: 13px; color: #fff; font-size: clamp(3rem, 5.2vw, 5.4rem); font-style: italic; font-weight: 950; letter-spacing: -.06em; line-height: .9; text-transform: uppercase; text-shadow: 0 0 32px rgb(54 188 255 / 22%); }
 .banner-wordmark p { margin: 20px 0 0; color: #cad8e8; font-size: clamp(1rem, 1.8vw, 1.35rem); font-weight: 650; letter-spacing: .04em; }
-.city-hint { position: absolute; right: 26px; bottom: 20px; z-index: 5; display: inline-flex; align-items: center; gap: 9px; color: #8bdfff; font-size: .58rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; pointer-events: none; }
-.city-hint i { width: 8px; height: 8px; border: 1px solid currentcolor; border-radius: 50%; box-shadow: 0 0 0 5px rgb(90 213 255 / 9%), 0 0 18px #4acfff; }
-.city-pulsed .city-hint i { animation: cityHintPulse 700ms ease-out; }
-@keyframes cityHintPulse { to { box-shadow: 0 0 0 22px transparent, 0 0 28px #4acfff; transform: scale(.7); } }
 .hero-copy { display: grid; grid-template-columns: 1.2fr .8fr; column-gap: 70px; align-items: end; margin-top: 52px; }
 .hero-copy .kicker { grid-column: 1 / -1; }
 .hero-copy > p:not(.kicker) { max-width: 520px; margin: 0 0 32px; color: #bfd0e2; font-size: 1.08rem; line-height: 1.76; }
@@ -151,6 +147,7 @@ h2 { margin: 18px 0 24px; font-size: clamp(2.65rem, 4.6vw, 4.4rem); font-weight:
 .emblem-mark { position: relative; display: grid; aspect-ratio: 1; place-items: center; }
 .emblem-mark::before { position: absolute; inset: 10%; border-radius: 50%; background: radial-gradient(circle, rgb(14 128 203 / 26%), transparent 65%); content: ""; }
 .emblem-mark img { position: relative; z-index: 2; width: 78%; border-radius: 16%; object-fit: cover; filter: drop-shadow(0 0 35px rgb(36 181 255 / 20%)); }
+.emblem-mark .living-mark { width: 100%; border-radius: 26px; -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 94%); mask-image: radial-gradient(circle, #000 58%, transparent 94%); mix-blend-mode: screen; }
 .orbit { position: absolute; inset: 9%; border: 1px dotted rgb(97 208 255 / 42%); border-radius: 50%; animation: orbit 22s linear infinite; }
 .orbit.two { inset: 20%; border-color: rgb(176 89 255 / 42%); animation-direction: reverse; animation-duration: 15s; }
 @keyframes orbit { to { transform: rotate(360deg); } }
@@ -279,7 +276,6 @@ footer .brand img { width: 40px; height: 40px; }
   .banner-living-emblem { height: 310px; padding: 18px 20px 0; }
   .banner-wordmark { margin-top: -16px; padding: 0 28px 54px; text-align: center; }
   .banner-wordmark strong { font-size: clamp(3rem, 14vw, 5rem); }
-  .city-hint { right: 18px; bottom: 16px; }
   .hero-copy { margin-top: 48px; }
   .scroll-signal { display: none; }
   .civilian-scene { border-radius: 18px; }
@@ -324,6 +320,6 @@ footer .brand img { width: 40px; height: 40px; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .orbit, .glitch-bug, .data-bunny, .pulse-shot, .miss-pulse, .city-hint i { animation: none; }
+  .orbit, .glitch-bug, .data-bunny, .pulse-shot, .miss-pulse { animation: none; }
   .memory-card, .character-grid article, .repair-drone { transition: none; }
 }

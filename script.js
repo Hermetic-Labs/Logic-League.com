@@ -85,6 +85,9 @@ async function initPointCloudCity() {
     let pointerX = 0;
     let pointerY = 0;
     let pulse = null;
+    let lastHoverPulse = 0;
+    let lastHoverX = 0;
+    let lastHoverY = 0;
     let frame = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const positionAttribute = geometry.getAttribute('position');
@@ -109,12 +112,32 @@ async function initPointCloudCity() {
       const relativeX = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
       const relativeY = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
       pulse = { x: (relativeX - .5) * 20, z: (relativeY - .48) * 8, started: performance.now() };
-      banner.classList.remove('city-pulsed');
-      requestAnimationFrame(() => banner.classList.add('city-pulsed'));
     };
 
-    banner.addEventListener('pointermove', setPointer);
-    banner.addEventListener('pointerdown', launchPulse);
+    const reactToPointer = (event) => {
+      setPointer(event);
+      if (event.pointerType !== 'mouse') return;
+      const now = performance.now();
+      const travel = Math.hypot(event.clientX - lastHoverX, event.clientY - lastHoverY);
+      if (now - lastHoverPulse > 420 && travel > 34) {
+        launchPulse(event);
+        lastHoverPulse = now;
+        lastHoverX = event.clientX;
+        lastHoverY = event.clientY;
+      }
+    };
+
+    banner.addEventListener('pointerenter', (event) => {
+      setPointer(event);
+      if (event.pointerType === 'mouse') {
+        launchPulse(event);
+        lastHoverPulse = performance.now();
+        lastHoverX = event.clientX;
+        lastHoverY = event.clientY;
+      }
+    });
+    banner.addEventListener('pointermove', reactToPointer);
+    banner.addEventListener('pointerdown', (event) => { if (event.pointerType !== 'mouse') launchPulse(event); });
     new ResizeObserver(resize).observe(banner);
     resize();
     banner.classList.add('city-live');
