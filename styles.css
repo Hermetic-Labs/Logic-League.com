@@ -217,8 +217,16 @@ h2 { margin: 18px 0 24px; font-size: clamp(2.65rem, 4.6vw, 4.4rem); font-weight:
 .memory-front[data-agent="X"] { background: rgb(255 64 80 / 18%); }.memory-front[data-agent="Y"] { background: rgb(47 221 85 / 16%); }.memory-front[data-agent="Z"] { background: rgb(10 170 246 / 18%); }.memory-front[data-agent="E"] { background: rgb(156 236 255 / 14%); }
 .memory-front[data-agent="BC"] { background: rgb(255 209 92 / 16%); }.memory-front[data-agent="C"] { background: rgb(166 92 255 / 20%); }.memory-front[data-agent="CB"] { background: rgb(255 64 144 / 18%); }
 .repair-field { position: relative; height: 390px; overflow: hidden; border: 1px solid rgb(103 198 255 / 25%); border-radius: 16px; background: radial-gradient(circle at 50% 65%, rgb(25 132 190 / 26%), transparent 46%), #05142b; cursor: crosshair; touch-action: none; }
+.repair-field:focus-visible { outline: 2px solid #9cecff; outline-offset: 3px; }
+.repair-field.is-active { cursor: none; }
 .repair-sky { position: absolute; inset: 0; background-image: radial-gradient(circle, rgb(97 215 255 / 30%) 0 1px, transparent 1.5px), linear-gradient(rgb(64 191 255 / 9%) 1px, transparent 1px), linear-gradient(90deg, rgb(64 191 255 / 9%) 1px, transparent 1px); background-size: 30px 30px, 26px 26px, 26px 26px; mask-image: linear-gradient(to bottom, #000, transparent 76%); opacity: .55; }
 .repair-idle { position: absolute; inset: 0; display: grid; place-items: center; color: #6f89a4; font-size: .7rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.repair-aim { position: absolute; top: 0; left: 0; z-index: 7; width: 48px; height: 48px; border: 2px solid #9cecff; border-radius: 50%; box-shadow: 0 0 0 5px rgb(65 213 255 / 10%), inset 0 0 16px rgb(66 213 255 / 18%), 0 0 22px rgb(66 213 255 / 28%); opacity: 0; transform: translate(-50%, -50%); transition: opacity 180ms ease; pointer-events: none; }
+.repair-field.is-active .repair-aim { opacity: 1; }
+.repair-aim::before, .repair-aim::after { position: absolute; top: 50%; left: 50%; background: #d9fbff; box-shadow: 0 0 9px #5cddff; content: ""; transform: translate(-50%, -50%); }
+.repair-aim::before { width: 64px; height: 1px; }
+.repair-aim::after { width: 1px; height: 64px; }
+.repair-aim span { position: absolute; inset: 15px; border: 1px solid #fff; border-radius: 50%; }
 .repair-drone { --tilt: 0deg; position: absolute; bottom: 5px; left: 50%; z-index: 8; width: 142px; height: 78px; filter: drop-shadow(0 8px 18px rgb(26 184 255 / 34%)); transform: translateX(-50%) rotate(var(--tilt)); transition: transform 120ms ease-out; pointer-events: none; }
 .drone-wing { position: absolute; bottom: 16px; width: 54px; height: 31px; border: 1px solid #56d7ff; background: linear-gradient(135deg, #123d62, #071b34 68%); box-shadow: inset 0 0 12px rgb(85 221 255 / 18%); }
 .drone-wing.left { left: 2px; clip-path: polygon(0 52%, 100% 0, 82% 100%, 14% 84%); }
@@ -227,9 +235,11 @@ h2 { margin: 18px 0 24px; font-size: clamp(2.65rem, 4.6vw, 4.4rem); font-weight:
 .drone-body::before { position: absolute; top: -9px; left: 50%; width: 40px; height: 21px; border: 1px solid #75e1ff; border-radius: 50% 50% 30% 30%; background: rgb(22 101 145 / 72%); content: ""; transform: translateX(-50%); }
 .drone-body i { position: absolute; inset: 9px 16px 15px; border: 1px solid rgb(158 239 255 / 44%); border-radius: 50%; }
 .drone-emitter { position: absolute; bottom: 15px; left: 50%; z-index: 3; display: grid; width: 32px; height: 32px; place-items: center; border: 2px solid #c7f9ff; border-radius: 50%; color: #fff; background: radial-gradient(circle, #fff 0 8%, #43d8ff 12% 25%, #0a2948 32%); box-shadow: 0 0 18px #59ddff; transform: translateX(-50%); }
-.glitch-bug { position: absolute; z-index: 5; display: grid; width: 58px; height: 58px; padding: 0; place-items: center; border: 2px solid #ff5a76; border-radius: 18px; color: #ffd5dc; background: radial-gradient(circle at 36% 32%, #ff718a, #801d43 58%, #31112a); box-shadow: 0 0 25px rgb(255 64 80 / 36%); font-size: 1.55rem; animation: bugFloat 900ms ease-in-out infinite alternate; }
-.glitch-bug::after { position: absolute; inset: -8px; border: 1px dashed rgb(255 105 128 / 48%); border-radius: 22px; content: ""; animation: orbit 3s linear infinite; }
-@keyframes bugFloat { to { transform: translateY(-7px) rotate(3deg); } }
+.glitch-bug { --drift-x: 10px; --drift-y: -8px; position: absolute; z-index: 5; width: 78px; height: 78px; overflow: hidden; border: 2px solid #ff5a76; border-radius: 20px; color: #fff; background: #27112a; box-shadow: 0 0 0 5px rgb(255 72 104 / 8%), 0 0 28px rgb(255 64 80 / 38%); animation: bugDrift 1.9s ease-in-out infinite alternate; pointer-events: none; }
+.glitch-bug::after { position: absolute; inset: -1px; border: 1px solid rgb(255 206 217 / 28%); border-radius: inherit; content: ""; }
+.glitch-bug img { width: 100%; height: 100%; object-fit: cover; object-position: center 14%; }
+.glitch-bug strong { position: absolute; right: 4px; bottom: 4px; left: 4px; padding: 4px 5px; overflow: hidden; border-radius: 7px; color: #fff; background: rgb(27 6 21 / 78%); font-size: .48rem; font-weight: 900; letter-spacing: .08em; text-align: center; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+@keyframes bugDrift { from { transform: translate(-7px, 5px) rotate(-2deg); } to { transform: translate(var(--drift-x), var(--drift-y)) rotate(2deg); } }
 .pulse-shot { position: absolute; z-index: 7; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px #6ce7ff, 0 0 24px #69dcff; pointer-events: none; animation: shot 240ms linear forwards; }
 @keyframes shot { to { transform: translate(var(--dx), var(--dy)) scale(.5); opacity: .65; } }
 .data-bunny { position: absolute; z-index: 9; display: grid; width: 66px; height: 66px; place-items: center; color: #fff; filter: drop-shadow(0 0 15px #64e7ff); font-size: 2.4rem; pointer-events: none; animation: bunnyBounce 1350ms cubic-bezier(.22,.8,.35,1) forwards; }

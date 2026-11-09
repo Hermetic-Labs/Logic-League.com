@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#061226">
   <title>Logic League — Think in every direction</title>
   <link rel="icon" href="assets/logic-league-emblem-approved.png" type="image/png">
-  <link rel="stylesheet" href="styles.css?v=20261108-4">
-  <script src="script.js?v=20261108-4" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261108-5">
+  <script src="script.js?v=20261108-5" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to the adventure</a>
@@ -115,13 +115,14 @@
         </article>
         <article class="game-card repair-game" aria-labelledby="repair-title">
           <header><div><p>Mission 02</p><h3 id="repair-title">Bug to Bunny</h3></div><button type="button" class="game-button" id="repair-start">Start mission</button></header>
-          <p class="game-instructions">Guide EVE's Repair Drone, lock onto each glitch bug, and launch a repair pulse. Fix six bugs and watch the data bunnies bounce home.</p>
-          <div class="repair-field" id="repair-field" aria-label="Repair Drone rescue game">
+          <p class="game-instructions">Steer the target ring with your mouse or arrow keys, then click or press Space to launch a repair pulse. Turn all six Deprecators into data bunnies.</p>
+          <div class="repair-field" id="repair-field" aria-label="Repair Drone aiming game" tabindex="0">
             <div class="repair-sky" aria-hidden="true"></div>
             <div class="repair-idle">Press start when you're ready</div>
+            <div class="repair-aim" id="repair-aim" aria-hidden="true"><span></span></div>
             <div class="repair-drone" id="repair-drone" aria-hidden="true"><span class="drone-wing left"></span><span class="drone-wing right"></span><span class="drone-body"><i></i></span><span class="drone-emitter">◇</span></div>
           </div>
-          <p class="game-status" id="repair-status" aria-live="polite">Six glitch bugs are waiting</p>
+          <p class="game-status" id="repair-status" aria-live="polite">Six Deprecators need repair</p>
         </article>
       </div>
     </section>

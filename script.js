@@ -271,10 +271,24 @@ const repairField = document.querySelector('#repair-field');
 const repairStatus = document.querySelector('#repair-status');
 const repairStart = document.querySelector('#repair-start');
 const repairDrone = document.querySelector('#repair-drone');
+const repairAim = document.querySelector('#repair-aim');
+const deprecatorTargets = [
+  { name: 'Typo', image: 'assets/characters/typo.webp' },
+  { name: 'Boolz', image: 'assets/characters/boolz.webp' },
+  { name: 'Elsephine', image: 'assets/characters/elsephine.webp' },
+  { name: 'Nullbert', image: 'assets/characters/nullbert.webp' },
+  { name: 'Segmunk', image: 'assets/characters/segmunk.webp' },
+  { name: 'Loopus', image: 'assets/characters/loopus.webp' }
+];
 let repairs = 0;
 let repairActive = false;
 let currentBug = null;
 let shotLocked = false;
+let repairOrder = [];
+let aimPoint = { x: 0, y: 0 };
+let steerPoint = { x: 0, y: 0 };
+let aimFrame = 0;
+const reducedRepairMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function playRepairTone() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -300,6 +314,13 @@ function fieldPoint(event) {
   return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 }
 
+function boundedAim(point) {
+  return {
+    x: Math.max(28, Math.min(repairField.clientWidth - 28, point.x)),
+    y: Math.max(28, Math.min(repairField.clientHeight - 105, point.y))
+  };
+}
+
 function droneOrigin() {
   return { x: repairField.clientWidth / 2, y: repairField.clientHeight - 42 };
 }
@@ -310,30 +331,59 @@ function aimDrone(point) {
   repairDrone.style.setProperty('--tilt', `${tilt}deg`);
 }
 
+function moveAim(point) {
+  steerPoint = boundedAim(point);
+  const nudge = reducedRepairMotion ? 1 : .18;
+  aimPoint.x += (steerPoint.x - aimPoint.x) * nudge;
+  aimPoint.y += (steerPoint.y - aimPoint.y) * nudge;
+  repairAim.style.left = `${aimPoint.x}px`;
+  repairAim.style.top = `${aimPoint.y}px`;
+  aimDrone(aimPoint);
+}
+
+function renderAim() {
+  if (!repairActive) return;
+  const ease = reducedRepairMotion ? 1 : .13;
+  aimPoint.x += (steerPoint.x - aimPoint.x) * ease;
+  aimPoint.y += (steerPoint.y - aimPoint.y) * ease;
+  repairAim.style.left = `${aimPoint.x}px`;
+  repairAim.style.top = `${aimPoint.y}px`;
+  aimDrone(aimPoint);
+  aimFrame = window.requestAnimationFrame(renderAim);
+}
+
 function spawnBug() {
   if (!repairActive || currentBug) return;
-  const bug = document.createElement('button');
-  bug.type = 'button';
+  const target = repairOrder[repairs];
+  const bug = document.createElement('div');
   bug.className = 'glitch-bug';
-  bug.textContent = '⌁';
-  bug.setAttribute('aria-label', 'Glitch bug. Aim and fire a repair pulse.');
-  bug.style.left = `${10 + Math.random() * 72}%`;
-  bug.style.top = `${8 + Math.random() * 48}%`;
-  bug.addEventListener('click', (event) => {
-    event.stopPropagation();
-    const fieldRect = repairField.getBoundingClientRect();
-    const bugRect = bug.getBoundingClientRect();
-    fireAt({ x: bugRect.left - fieldRect.left + bugRect.width / 2, y: bugRect.top - fieldRect.top + bugRect.height / 2 });
-  });
+  bug.setAttribute('role', 'img');
+  bug.setAttribute('aria-label', `${target.name}, a Deprecator repair target`);
+  bug.dataset.name = target.name;
+  const portrait = document.createElement('img');
+  portrait.src = target.image;
+  portrait.alt = '';
+  const name = document.createElement('strong');
+  name.textContent = target.name;
+  bug.append(portrait, name);
+  const maxX = Math.max(32, repairField.clientWidth - 118);
+  const maxY = Math.max(38, repairField.clientHeight - 190);
+  bug.style.left = `${20 + Math.random() * maxX}px`;
+  bug.style.top = `${24 + Math.random() * maxY}px`;
+  bug.style.setProperty('--drift-x', `${6 + Math.random() * 12}px`);
+  bug.style.setProperty('--drift-y', `${-12 + Math.random() * 18}px`);
   currentBug = bug;
   repairField.append(bug);
+  repairStatus.textContent = `Target: ${target.name} · ${repairs} of 6 repaired`;
 }
 
 function finishRepairMission() {
   repairActive = false;
   shotLocked = false;
   currentBug = null;
-  repairStatus.textContent = 'Mission complete · Six data bunnies are safely home!';
+  window.cancelAnimationFrame(aimFrame);
+  repairField.classList.remove('is-active');
+  repairStatus.textContent = 'Mission complete · All six Deprecators are data bunnies!';
   repairStart.textContent = 'Play again';
   const message = document.createElement('div');
   message.className = 'repair-idle';
@@ -345,8 +395,11 @@ function repairBug() {
   if (!currentBug) return;
   const bug = currentBug;
   currentBug = null;
-  const left = bug.offsetLeft;
-  const top = bug.offsetTop;
+  const fieldRect = repairField.getBoundingClientRect();
+  const bugRect = bug.getBoundingClientRect();
+  const left = bugRect.left - fieldRect.left + bugRect.width / 2 - 33;
+  const top = bugRect.top - fieldRect.top + bugRect.height / 2 - 33;
+  const repairedName = bug.dataset.name;
   bug.remove();
 
   const bunny = document.createElement('span');
@@ -357,7 +410,7 @@ function repairBug() {
   repairField.append(bunny);
   playRepairTone();
   repairs += 1;
-  repairStatus.textContent = repairs === 1 ? '1 of 6 bugs repaired' : `${repairs} of 6 bugs repaired`;
+  repairStatus.textContent = `${repairedName} repaired · ${repairs} of 6`;
 
   window.setTimeout(() => bunny.remove(), 1400);
   window.setTimeout(() => {
@@ -370,20 +423,23 @@ function repairBug() {
 function fireAt(point) {
   if (!repairActive || shotLocked) return;
   shotLocked = true;
-  aimDrone(point);
+  const targetPoint = boundedAim(point);
+  aimDrone(targetPoint);
   const origin = droneOrigin();
   const shot = document.createElement('span');
   shot.className = 'pulse-shot';
   shot.style.left = `${origin.x - 6}px`;
   shot.style.top = `${origin.y - 6}px`;
-  shot.style.setProperty('--dx', `${point.x - origin.x}px`);
-  shot.style.setProperty('--dy', `${point.y - origin.y}px`);
+  shot.style.setProperty('--dx', `${targetPoint.x - origin.x}px`);
+  shot.style.setProperty('--dy', `${targetPoint.y - origin.y}px`);
   repairField.append(shot);
 
   let hit = false;
   if (currentBug) {
-    const bugCenter = { x: currentBug.offsetLeft + currentBug.offsetWidth / 2, y: currentBug.offsetTop + currentBug.offsetHeight / 2 };
-    hit = Math.hypot(point.x - bugCenter.x, point.y - bugCenter.y) < 58;
+    const fieldRect = repairField.getBoundingClientRect();
+    const bugRect = currentBug.getBoundingClientRect();
+    const bugCenter = { x: bugRect.left - fieldRect.left + bugRect.width / 2, y: bugRect.top - fieldRect.top + bugRect.height / 2 };
+    hit = Math.hypot(targetPoint.x - bugCenter.x, targetPoint.y - bugCenter.y) < 44;
   }
 
   window.setTimeout(() => {
@@ -392,27 +448,54 @@ function fireAt(point) {
     else {
       const miss = document.createElement('span');
       miss.className = 'miss-pulse';
-      miss.style.left = `${point.x - 11}px`;
-      miss.style.top = `${point.y - 11}px`;
+      miss.style.left = `${targetPoint.x - 11}px`;
+      miss.style.top = `${targetPoint.y - 11}px`;
       repairField.append(miss);
       window.setTimeout(() => miss.remove(), 500);
       shotLocked = false;
-      repairStatus.textContent = `${repairs} of 6 repaired · Adjust your aim!`;
+      repairStatus.textContent = `${currentBug?.dataset.name || 'Target'} missed · Steer the ring and try again`;
     }
   }, 250);
 }
 
 function startRepairMission() {
   repairField.querySelectorAll('.glitch-bug,.data-bunny,.pulse-shot,.miss-pulse,.repair-idle').forEach((item) => item.remove());
+  window.cancelAnimationFrame(aimFrame);
   repairs = 0;
   repairActive = true;
   shotLocked = false;
   currentBug = null;
+  repairOrder = [...deprecatorTargets].sort(() => Math.random() - .5);
+  aimPoint = { x: repairField.clientWidth / 2, y: repairField.clientHeight * .42 };
+  steerPoint = { ...aimPoint };
+  repairAim.style.left = `${aimPoint.x}px`;
+  repairAim.style.top = `${aimPoint.y}px`;
+  repairField.classList.add('is-active');
+  repairField.focus({ preventScroll: true });
   repairStart.textContent = 'Restart';
-  repairStatus.textContent = '0 of 6 bugs repaired';
   spawnBug();
+  renderAim();
 }
 
-repairField?.addEventListener('pointermove', (event) => aimDrone(fieldPoint(event)));
-repairField?.addEventListener('click', (event) => fireAt(fieldPoint(event)));
+repairField?.addEventListener('pointermove', (event) => {
+  if (repairActive) moveAim(fieldPoint(event));
+});
+repairField?.addEventListener('click', () => fireAt({ ...aimPoint }));
+repairField?.addEventListener('keydown', (event) => {
+  if (!repairActive) return;
+  const step = event.shiftKey ? 42 : 24;
+  const moves = {
+    ArrowLeft: [-step, 0], a: [-step, 0], A: [-step, 0],
+    ArrowRight: [step, 0], d: [step, 0], D: [step, 0],
+    ArrowUp: [0, -step], w: [0, -step], W: [0, -step],
+    ArrowDown: [0, step], s: [0, step], S: [0, step]
+  };
+  if (moves[event.key]) {
+    event.preventDefault();
+    moveAim({ x: steerPoint.x + moves[event.key][0], y: steerPoint.y + moves[event.key][1] });
+  } else if (event.key === ' ' || event.key === 'Enter') {
+    event.preventDefault();
+    fireAt({ ...aimPoint });
+  }
+});
 repairStart?.addEventListener('click', startRepairMission);
